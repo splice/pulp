@@ -247,7 +247,7 @@ class BaseSynchronizer(object):
             log.debug("Processing %s potential packages" % (len(package_list)))
             for package in package_list:
                 pkg_path = "%s/%s/%s/%s/%s/%s/%s" % (pulp.server.util.top_package_location(), package.name, package.version, \
-                                                          package.release, package.arch, package.checksum[:3], os.path.basename(package.relativepath))
+                                                          package.release, package.arch, package.checksum, os.path.basename(package.relativepath))
                 if not os.path.exists(pkg_path):
                     # skip import; package is missing from the filesystem
                     continue
@@ -319,7 +319,7 @@ class BaseSynchronizer(object):
 
             for package in package_list:
                 pkg_path = "%s/%s/%s/%s/%s/%s/%s" % (pulp.server.util.top_package_location(), package['name'], package['version'], \
-                                                          package['release'], package['arch'], package['checksum'].values()[0][:3], package['filename'])
+                                                          package['release'], package['arch'], package['checksum'].values()[0], package['filename'])
                 if not os.path.exists(pkg_path):
                     # skip import; package is missing from the filesystem
                     continue
@@ -872,7 +872,7 @@ class YumSynchronizer(BaseSynchronizer):
 
     def _process_rpm(self, pkg, src_repo_dir, dst_repo_dir):
         dst_pkg_path = "%s/%s/%s/%s/%s/%s/%s" % (pulp.server.util.top_package_location(), pkg.name, pkg.version, \
-                                                  pkg.release, pkg.arch, pkg.checksum[:3], os.path.basename(pkg.relativepath))
+                                                  pkg.release, pkg.arch, pkg.checksum, os.path.basename(pkg.relativepath))
         if not pulp.server.util.check_package_exists(dst_pkg_path, pkg.checksum, hashtype=pkg.checksum_type):
             pkg_dirname = os.path.dirname(dst_pkg_path)
             if not os.path.exists(pkg_dirname):
