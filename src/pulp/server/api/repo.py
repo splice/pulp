@@ -2517,6 +2517,7 @@ class RepoApi(BaseApi):
             return True
         return False
  
+
 def validate_relative_path(new_path, existing_path):
     """
     Checks that the proposed new relative path will not conflict with an
@@ -2558,14 +2559,21 @@ def validate_relative_path(new_path, existing_path):
     # /foo/bar and /foo/bar2 since the above check will have punched out early
     # if this was the case. If the above check wasn't there, this example would
     # reflect as invalid when in reality it is safe.
-    
-    if existing_path.startswith(new_path):
-        log.warn('New relative path [%s] is a parent directory of existing path [%s]' % (new_path, existing_path))
-        return False
 
-    if new_path.startswith(existing_path):
-        log.warn('New relative path [%s] is nested in existing path [%s]' % (existing_path, new_path))
+    new_path_parts = new_path.split('/')
+    new_path_root_dir = new_path_parts[0]
+    existing_path_parts = existing_path.split('/')
+    existing_path_root_dir = existing_path_parts[0]
+
+    if new_path_root_dir == existing_path_root_dir:
+        if len(new_path_parts) > len(existing_path_parts):
+            log.warn('New relative path [%s] is nested in existing path [%s]'
+                     % (existing_path, new_path))
+        else:
+            log.warn('New relative path [%s] is a parent directory of '
+                     'existing path [%s]' % (new_path, existing_path))
         return False
 
     # If we survived the parent/child tests, the new path is safe
     return True
+
