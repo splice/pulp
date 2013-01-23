@@ -1538,6 +1538,10 @@ class TestRepoApi(testutil.PulpAsyncTest):
         self.assertFalse(repo.validate_relative_path('foo', 'foo/bar'))
         self.assertFalse(repo.validate_relative_path('foo/bar', 'foo'))
 
+        # Paths with common string prefix, but not comon directory should not
+        # fail
+        self.assertTrue(repo.validate_relative_path('prefix', 'prefix-1/foo'))
+
     def test_repo_publish_on_create(self):
         repo = self.repo_api.create('repo_publish_true', 'some name',
             'i386', 'http://example.com', publish=True)
