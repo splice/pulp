@@ -407,12 +407,14 @@ fi
 %attr(-, root, root) %{python_sitelib}/pulp/repo_auth/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp.conf
 %config(noreplace) %{_sysconfdir}/pulp
+%attr(640, apache, apache) %{_sysconfdir}/pulp
 %ghost %{_sysconfdir}/yum.repos.d/pulp.repo
 %attr(-, apache, apache) /srv/pulp/webservices.wsgi
 %attr(-, apache, apache) /srv/pulp/repo_auth.wsgi
 /var/lib/pulp
 /var/www/pub
 /var/log/pulp
+%attr(750, apache, apache) /var/log/pulp
 %config(noreplace) %{_sysconfdir}/pki/pulp
 %attr(755, root, root) %{_sysconfdir}/rc.d/init.d/pulp-server
 %{_bindir}/pulp-migrate
