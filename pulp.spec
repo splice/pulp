@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        25%{?dist}
+Release:        26%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -501,6 +501,17 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Wed Jan 30 2013 James Slagle <jslagle@redhat.com> 0.0.263-26
+- 892488 - Remove world readable perms from /etc/pulp/pulp.conf and
+  /var/log/pulp (jslagle@redhat.com)
+- 845941 - test (jslagle@redhat.com)
+- 845941 - Fix relative path checking to not deny paths like prefix and
+  prefix-1/foo (jslagle@redhat.com)
+- Revert "842859 adding a default value for the ssl_ca_cert for rhui on the
+  rhui branch" (whayutin@redhat.com)
+- 842859 adding a default value for the ssl_ca_cert for rhui on the rhui branch
+  (whayutin@redhat.com)
+
 * Mon Jul 30 2012 James Slagle <jslagle@redhat.com> 0.0.263-25
 - Remove debugging output (jslagle@redhat.com)
 
