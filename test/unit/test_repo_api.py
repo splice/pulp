@@ -1542,6 +1542,16 @@ class TestRepoApi(testutil.PulpAsyncTest):
         # fail
         self.assertTrue(repo.validate_relative_path('prefix', 'prefix-1/foo'))
 
+        self.assertTrue(
+            repo.validate_relative_path(
+               'content/dist/rhel/rhui/server/6/6Server/i386/rhui/2.0/source/SRPMS', 
+               'content/dist/rhel/rhui/server/6/6Server/x86_64/rhui/2.0/os'))
+
+        self.assertTrue(
+            repo.validate_relative_path(
+               'content/dist/rhel/rhui/server/6/6Server/x86_64/rhui/2.0/os',
+               'content/dist/rhel/rhui/server/6/6Server/i386/rhui/2.0/source/SRPMS'))
+
     def test_repo_publish_on_create(self):
         repo = self.repo_api.create('repo_publish_true', 'some name',
             'i386', 'http://example.com', publish=True)

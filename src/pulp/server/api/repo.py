@@ -14,6 +14,7 @@
 
 # Python
 import gzip
+import itertools
 import logging
 import os
 import re
@@ -2560,20 +2561,23 @@ def validate_relative_path(new_path, existing_path):
     # if this was the case. If the above check wasn't there, this example would
     # reflect as invalid when in reality it is safe.
 
-    new_path_parts = new_path.split('/')
-    new_path_root_dir = new_path_parts[0]
-    existing_path_parts = existing_path.split('/')
-    existing_path_root_dir = existing_path_parts[0]
-
-    if new_path_root_dir == existing_path_root_dir:
-        if len(new_path_parts) > len(existing_path_parts):
-            log.warn('New relative path [%s] is nested in existing path [%s]'
-                     % (existing_path, new_path))
+    common = ''
+    parts = itertools.izip(new_path.split('/'), existing_path.split('/'))
+    for p in parts:
+        if p[0] == p[1]:
+            common = os.path.join(common, p[0])
         else:
-            log.warn('New relative path [%s] is a parent directory of '
-                     'existing path [%s]' % (new_path, existing_path))
+            break
+    print common
+
+    if common == new_path:
+        log.warn('New relative path [%s] is a parent directory of existing '
+            'path [%s]' % (new_path, existing_path))
         return False
-
-    # If we survived the parent/child tests, the new path is safe
-    return True
-
+    elif common == existing_path:
+        log.warn('New relative path [%s] is nested in existing path [%s]' 
+            % (existing_path, new_path))
+        return False
+    else:
+        # If we survived the parent/child tests, the new path is safe
+        return True
