@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        26%{?dist}
+Release:        27%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -507,6 +507,11 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Fri Feb 01 2013 James Slagle <jslagle@redhat.com> 0.0.263-27
+- Set file permissions different for files and directories (jslagle@redhat.com)
+- 845941 - Correct relative path checking and add new test case
+  (jslagle@redhat.com)
+
 * Wed Jan 30 2013 James Slagle <jslagle@redhat.com> 0.0.263-26
 - 892488 - Remove world readable perms from /etc/pulp/pulp.conf and
   /var/log/pulp (jslagle@redhat.com)
