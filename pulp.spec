@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        27%{?dist}
+Release:        28%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -513,6 +513,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Wed Feb 13 2013 James Slagle <jslagle@redhat.com> 0.0.263-28
+- 910707 - pulp-cds should require rh-rhui-tools-debug-script
+  (jslagle@redhat.com)
+
 * Fri Feb 01 2013 James Slagle <jslagle@redhat.com> 0.0.263-27
 - Set file permissions different for files and directories (jslagle@redhat.com)
 - 845941 - Correct relative path checking and add new test case
