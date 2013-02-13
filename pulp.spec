@@ -165,6 +165,12 @@ Requires: m2crypto = 0.21.1.pulp
 %if %{pulp_selinux}
 Requires: %{name}-selinux-server = %{version}
 %endif
+
+# pulp-cds is really the only package we have that is specific to CDS's from a
+# RHUI perspective. So we need to add a Requires here to make sure the debug
+# script for sosreport is installed on CDS's.
+Requires:       rh-rhui-tools-debug-script
+
 BuildRequires:  rpm-python
 # Both attempt to serve content at the same apache alias, so don't
 # allow them to be installed at the same time.
