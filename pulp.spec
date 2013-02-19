@@ -324,6 +324,19 @@ then
   fi
 fi
 
+# Make sure all config files and directories are owned apache:apache, and
+# permissions are correct.
+# https://bugzilla.redhat.com/show_bug.cgi?id=892488
+chown -R apache.apache /etc/pulp
+chmod 750 /etc/pulp
+chmod 750 /etc/pulp/logging
+chmod 750 /etc/pulp/consumer
+chmod 750 /etc/pulp/admin
+chmod 640 /etc/pulp/*.conf
+chmod 640 /etc/pulp/*/*.conf
+chmod 640 /etc/pulp/logging/*.cfg
+
+
 # -- post - pulp cds ---------------------------------------------------------
 
 %post cds
