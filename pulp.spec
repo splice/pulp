@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        28%{?dist}
+Release:        29%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -526,6 +526,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Tue Feb 19 2013 James Slagle <jslagle@redhat.com> 0.0.263-29
+- 892488 - Make sure all config files and directories are owned apache:apache,
+  and permissions are correct in %%post (jslagle@redhat.com)
+
 * Wed Feb 13 2013 James Slagle <jslagle@redhat.com> 0.0.263-28
 - 910707 - pulp-cds should require rh-rhui-tools-debug-script
   (jslagle@redhat.com)
