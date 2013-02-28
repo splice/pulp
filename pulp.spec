@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        29%{?dist}
+Release:        30%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -529,6 +529,12 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Thu Feb 28 2013 James Slagle <jslagle@redhat.com> 0.0.263-30
+- 916326 - Add pulp-package-migrate command to both pulp server and cds server
+  during install. (jslagle@redhat.com)
+- 916326 - cherry pick 8d788f4849369b1f116edb368384ec4f8267bf1
+  (pkilambi@redhat.com)
+
 * Tue Feb 19 2013 James Slagle <jslagle@redhat.com> 0.0.263-29
 - 892488 - Make sure all config files and directories are owned apache:apache,
   and permissions are correct in %%post (jslagle@redhat.com)
