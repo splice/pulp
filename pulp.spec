@@ -443,6 +443,8 @@ fi
 %config(noreplace) %{_sysconfdir}/pki/pulp
 %attr(755, root, root) %{_sysconfdir}/rc.d/init.d/pulp-server
 %{_bindir}/pulp-migrate
+%{_bindir}/pulp-package-migrate
+
 # -- files - common ----------------------------------------------------------
 
 %files common
@@ -513,6 +515,7 @@ fi
 %attr(3775, apache, apache) /var/lib/pulp-cds/repos
 %attr(3775, apache, apache) /var/lib/pulp-cds/packages
 %attr(3775, apache, apache) /var/log/pulp-cds
+%{_bindir}/pulp-package-migrate
 
 %if %{pulp_selinux}
 %files selinux-server
