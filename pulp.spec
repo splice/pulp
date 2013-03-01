@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        30%{?dist}
+Release:        31%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -529,6 +529,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Fri Mar 01 2013 James Slagle <jslagle@redhat.com> 0.0.263-31
+- 836640 - The storage of the relative URL changed so we need to update the
+  relative URL checking to match that (jason.dobies@redhat.com)
+
 * Thu Feb 28 2013 James Slagle <jslagle@redhat.com> 0.0.263-30
 - 916326 - Add pulp-package-migrate command to both pulp server and cds server
   during install. (jslagle@redhat.com)
