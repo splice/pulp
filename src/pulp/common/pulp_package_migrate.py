@@ -127,6 +127,14 @@ def _migrate_repo_packages(repo_dir, top_package_location):
                 if not TEST_RUN:
                     if not os.path.isdir(os.path.dirname(new_pkg_path)):
                         os.makedirs(os.path.dirname(new_pkg_path))
+                        package_subdir = os.path.dirname(new_pkg_path)
+
+                        # All created subdirectories must be owned
+                        # apache:apache
+                        while package_subdir != top_package_location:
+                            os.chown(package_subdir, UID, GID)
+                            package_subdir = os.path.split(package_subdir)[0]
+
                     shutil.copy2(pkg_real_path, new_pkg_path)
                     os.chown(new_pkg_path, UID, GID)
                     # remove old package path
