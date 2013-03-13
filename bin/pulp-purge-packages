@@ -1,0 +1,202 @@
+#!/usr/bin/python
+# Copyright 2013 Red Hat, Inc.
+#
+# This software is licensed to you under the GNU General Public
+# License as published by the Free Software Foundation; either version
+# 2 of the License (GPLv2) or (at your option) any later version.
+# There is NO WARRANTY for this software, express or implied,
+# including the implied warranties of MERCHANTABILITY,
+# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
+# have received a copy of GPLv2 along with this software; if not, see
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
+
+import logging
+import optparse
+import os
+import subprocess
+import sys
+import traceback
+
+# constants
+LOGFILE = '/var/log/pulp-purge-packages'
+RHUA_PACKAGES_DIR = '/var/lib/pulp/packages'
+RHUA_REPOS_DIR = '/var/lib/pulp/repos'
+CDS_PACKAGES_DIR = '/var/lib/pulp-cds/packages'
+CDS_REPOS_DIR = '/var/lib/pulp-cds/repos'
+
+log = logging.getLogger(__name__)
+
+
+def get_refd_pkg_paths(repos_dir):
+    """
+    Return a list of file paths of all the referenced packages.
+    """
+    log.info('Getting all referenced packages, this may take a few minutes...')
+    refd_pkg_paths = []
+    for root, dirs, files in os.walk(repos_dir):
+        for f in files:
+            if f.endswith('.rpm') and f not in refd_pkg_paths:
+                refd_pkg_paths.append(os.path.realpath(os.path.join(root, f)))
+
+    log.info('%s referenced packages found.' % len(refd_pkg_paths))
+    return refd_pkg_paths
+
+def delete_empty_directory(directory, packages_dir, dry_run):
+    """
+    Recursively traverse up a directory and delete it if it's empty.
+
+    os.removedirs is not used because we do not want to end up deleting
+    /var/lib/pulp/packages.
+    """
+    if directory.endswith('/'):
+        directory = directory[:-1]
+    if packages_dir.endswith('/'):
+        packages_dir = packages_dir[:-1]
+
+    # Never delete the packages directory.
+    if directory == packages_dir:
+        return
+
+    if not os.path.isdir(directory):
+        log.info('%s is not a directory, can not check if it''s empty' %
+            directory)
+        return
+    else:
+        log.info('Checking if %s is an empty directory to delete.' %
+            directory)
+
+    if os.listdir(directory) == []:
+        if not dry_run:
+            os.rmdir(directory)
+            log.info('%s is an empty directory, deleted.' % directory) 
+        else:
+            log.info('%s empty directory delete skipped due to dry run.' % 
+                directory)
+        delete_empty_directory(os.path.dirname(directory), packages_dir, dry_run)
+    else:
+        log.info('%s is not empty.' % directory)
+
+def purge_pkgs(packages_dir, repos_dir, dry_run):
+    """
+    Deletes all unreferenced packages from the filesystem.
+    """
+    refd_pkg_paths = get_refd_pkg_paths(repos_dir)
+    deleted_pkg_paths = []
+    total_deleted_size = 0
+
+    for root, dirs, files in os.walk(packages_dir):
+        for f in files:
+            # package file name
+            package_fn = os.path.basename(f)
+            # package file path
+            package_fp = os.path.realpath(os.path.join(root, package_fn))
+
+            if package_fp not in refd_pkg_paths:
+                log.info('%s has no references.' % package_fp)
+                total_deleted_size += os.stat(package_fp).st_size
+                deleted_pkg_paths.append(package_fp)
+                if not dry_run:
+                    os.unlink(package_fp)
+                    log.info('%s deleted.' % package_fp)
+                else:
+                    log.info('%s delete skipped due to dry run.' % 
+                        package_fp)
+
+                # Clean up empty directories
+                delete_empty_directory(os.path.dirname(package_fp), packages_dir, dry_run)
+                log.info('----')
+
+    log.info('Deleted %s packages.' % len(deleted_pkg_paths))
+    log.info('%sMB total deleted.' % (total_deleted_size / 1024 / 1024))
+
+def check_httpd():
+    """
+    Verifies httpd is not running by using the pidof command.
+    """
+    pidof = subprocess.Popen(['pidof', 'httpd'], stdout=subprocess.PIPE)
+    stdout, stderr = pidof.communicate()
+    if pidof.returncode == 0:
+        log.error('httpd does not appear to be stopped')
+        log.error('Check pids %s' % stdout)
+        sys.exit(1)
+
+def detect_dirs():
+    """
+    Attempts to automatically detect the packages and repositories directories
+    so that they don't have to be specified on the command line.
+    """
+    log.info('Detecting packages and repository directories.')
+
+    if os.path.exists(RHUA_PACKAGES_DIR) and \
+       os.path.exists(RHUA_REPOS_DIR):
+        return RHUA_PACKAGES_DIR, RHUA_REPOS_DIR
+
+    if os.path.exists(CDS_PACKAGES_DIR) and \
+       os.path.exists(CDS_REPOS_DIR):
+        return CDS_PACKAGES_DIR, CDS_REPOS_DIR
+
+    log.error('Could not detect packages and repository directories.')
+    log.error('Exiting.')
+    sys.exit(1)
+
+def main(options):
+    log.info('Using %s as repository directory.' % options.repos_dir)
+    log.info('Using %s as packages directory to purge.' % options.packages_dir)
+
+    if options.dry_run:
+        log.info('Dry run specificed, No actual deletes will occur.')
+
+    purge_pkgs(options.packages_dir, options.repos_dir, options.dry_run)
+
+    log.info('Exiting.')
+
+if __name__ == '__main__':
+    # configure logging
+    file_format = '%(asctime)s-%(levelname)s-%(name)s-%(message)s'
+    fh = logging.FileHandler(LOGFILE)
+    fh.setFormatter(logging.Formatter(file_format))
+    stream_format = '%(asctime)s - %(message)s'
+    sh = logging.StreamHandler()
+    sh.setFormatter(logging.Formatter(stream_format))
+    log.addHandler(fh)
+    log.addHandler(sh)
+    log.setLevel(logging.INFO)
+
+    # options
+    parser = optparse.OptionParser()
+    parser.add_option('-p', '--packages-dir', action='store',
+                      help='packages directory to purge of orphaned packages\n'
+                           '(will be detected if not specified)')
+    parser.add_option('-r', '--repos-dir', action='store',
+                      help='repository directory to search for referenced '
+                           'packages\n'
+                           '(will be detected if not specified)')
+    parser.add_option('-d', '--dry-run', action='store_true',
+                      help='dry run only, do not actually purge any packages')
+    options, args = parser.parse_args()
+
+    log.info('Starting run of %s' % __file__)
+
+    print
+    print "WARNING: httpd must be stopped before this script can be run."
+    print 
+    print ("WARNING: This script will delete all packages not associated with "
+           "any repositories.  Including packages that were uploaded with the "
+           "'pulp-admin content upload' command.")
+    print
+
+    answer = raw_input("Continue? Y/N: ")
+    print
+    if answer.strip().lower() == 'n':
+        log.info('User requested exit.')
+        sys.exit()
+    check_httpd()
+
+    if not options.packages_dir and not options.repos_dir:
+        options.packages_dir, options.repos_dir = detect_dirs()
+
+    try:
+        main(options)
+    except:
+        log.error('Unexpected error ocurred:')
+        log.error(''.join(traceback.format_exception(*sys.exc_info())))
