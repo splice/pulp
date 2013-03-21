@@ -47,6 +47,7 @@ setup(
         '../bin/pulp-consumer',
         '../bin/pulp-migrate',
         '../bin/pulp-package-migrate',
+        '../bin/pulp-purge-packages',
     ],
     include_package_data=False,
     data_files=[],

@@ -444,6 +444,7 @@ fi
 %attr(755, root, root) %{_sysconfdir}/rc.d/init.d/pulp-server
 %{_bindir}/pulp-migrate
 %{_bindir}/pulp-package-migrate
+%{_bindir}/pulp-purge-packages
 
 # -- files - common ----------------------------------------------------------
 
@@ -516,6 +517,7 @@ fi
 %attr(3775, apache, apache) /var/lib/pulp-cds/packages
 %attr(3775, apache, apache) /var/log/pulp-cds
 %{_bindir}/pulp-package-migrate
+%{_bindir}/pulp-purge-packages
 
 %if %{pulp_selinux}
 %files selinux-server
