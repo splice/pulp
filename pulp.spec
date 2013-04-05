@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        31%{?dist}
+Release:        32%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -531,6 +531,13 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Fri Apr 05 2013 James Slagle <jslagle@redhat.com> 0.0.263-32
+- 916378 package pulp-purge-packages for both RHUA and CDS (jslagle@redhat.com)
+- Script to purge packages not referenced by any repositories
+  (jslagle@redhat.com)
+- All created subdirectories should be apache owned during package migration
+  (jslagle@redhat.com)
+
 * Fri Mar 01 2013 James Slagle <jslagle@redhat.com> 0.0.263-31
 - 836640 - The storage of the relative URL changed so we need to update the
   relative URL checking to match that (jason.dobies@redhat.com)
