@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        32%{?dist}
+Release:        33%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -531,6 +531,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Thu Jun 20 2013 James Slagle <jslagle@redhat.com> 0.0.263-33
+- 860800 - merge the errata spanning across multiple repos if their pkglist
+  collection doesnt match (pkilambi@redhat.com)
+
 * Fri Apr 05 2013 James Slagle <jslagle@redhat.com> 0.0.263-32
 - 916378 package pulp-purge-packages for both RHUA and CDS (jslagle@redhat.com)
 - Script to purge packages not referenced by any repositories
