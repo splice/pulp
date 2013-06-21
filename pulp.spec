@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        29%{?dist}
+Release:        29.1%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -526,6 +526,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Fri Jun 21 2013 James Slagle <jslagle@redhat.com> 0.0.263-29.1
+- 860800 - merge the errata spanning across multiple repos if their pkglist
+  collection doesnt match (pkilambi@redhat.com)
+
 * Tue Feb 19 2013 James Slagle <jslagle@redhat.com> 0.0.263-29
 - 892488 - Make sure all config files and directories are owned apache:apache,
   and permissions are correct in %%post (jslagle@redhat.com)
