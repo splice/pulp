@@ -1,0 +1,60 @@
+source ./env_vars
+
+setenforce 0
+sed -i "s/^SELINUX.*/SELINUX=permissive/" /etc/selinux/config
+
+service iptables stop
+chkconfig iptables off
+
+rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+
+wget -O /etc/yum.repos.d/testing_rpms_rhui.repo http://${RHUI_BUILD_HOST}/pub/testing_rpms_rhui.repo
+
+# Installing mongodb-server first and starting since it takes a few minutes for initial mongodb to come up
+# mongo will work on this while we continue to install other RPMs
+yum install -y mongodb-server
+chkconfig mongod on
+service mongod restart
+
+yum groupinstall -y "Development Tools"
+
+# We will install latest pulp RPMs to bring down all the deps, then we'll remove the pulp RPMs later.
+yum install -y pulp pulp-admin pulp-consumer gofer gofer-package
+
+service pulp-server init
+
+# Removing pulp RPMs since we will now run from git checkout
+# Note:  the pulp v1 git checkout is shared with the host machine, it's accessible at /vagrant
+rpm -e --nodeps pulp pulp-admin pulp-consumer
+
+# Below will run through the Pulp v1 development environment setup steps
+pushd .
+cd ${PULP_GIT_PATH}/src
+python setup.py develop
+cd ..
+python pulp-dev.py -I
+popd
+
+pulp-migrate
+
+# Update /etc/pulp/pulp.conf
+sed -i "s/^server_name:*/server_name: pulp.example.com/" /etc/pulp/pulp.conf
+sed -i "s/^url:*/url: tcp:\/\/pulp.example.com:5672/" /etc/pulp/pulp.conf
+
+# Update /etc/pulp/admin/admin.conf
+sed -i "s/^host.*/host = pulp.example.com/" /etc/pulp/admin/admin.conf
+
+service qpidd restart
+service pulp-server restart
+
+yum install -y vim-enhanced
+cp ./dotfiles/dot.vimrc /root/.vimrc
+cp ./dotfiles/dot.vimrc /home/vagrant/.vimrc
+chown vagrant /home/vagrant/.vimrc
+
+echo "Pulp devel enviroment is setup"
+echo "Run: 'vagrant ssh' to ssh into the Pulp devel env VM"
+echo " or ssh vagrant@pulp.example.com   (Password is 'vagrant')"
+echo "Enjoy."
+
+
