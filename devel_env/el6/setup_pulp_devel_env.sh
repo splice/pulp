@@ -20,6 +20,7 @@ yum groupinstall -y "Development Tools"
 
 # We will install latest pulp RPMs to bring down all the deps, then we'll remove the pulp RPMs later.
 yum install -y pulp pulp-admin pulp-consumer gofer gofer-package
+yum install -y python-nose python-paste python-mock
 
 service pulp-server init
 
@@ -38,8 +39,8 @@ popd
 pulp-migrate
 
 # Update /etc/pulp/pulp.conf
-sed -i "s/^server_name:*/server_name: pulp.example.com/" /etc/pulp/pulp.conf
-sed -i "s/^url:*/url: tcp:\/\/pulp.example.com:5672/" /etc/pulp/pulp.conf
+sed -i "s/^server_name:.*/server_name: pulp.example.com/" /etc/pulp/pulp.conf
+sed -i "s/^url:.*/url: tcp:\/\/pulp.example.com:5672/" /etc/pulp/pulp.conf
 
 # Update /etc/pulp/admin/admin.conf
 sed -i "s/^host.*/host = pulp.example.com/" /etc/pulp/admin/admin.conf
@@ -51,6 +52,9 @@ yum install -y vim-enhanced
 cp ./dotfiles/dot.vimrc /root/.vimrc
 cp ./dotfiles/dot.vimrc /home/vagrant/.vimrc
 chown vagrant /home/vagrant/.vimrc
+
+pulp-admin auth login --username admin --password admin
+pulp-admin repo create --id simple_errata --feed http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_errata_install/
 
 echo "Pulp devel enviroment is setup"
 echo "Run: 'vagrant ssh' to ssh into the Pulp devel env VM"
