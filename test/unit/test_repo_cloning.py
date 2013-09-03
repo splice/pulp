@@ -70,8 +70,8 @@ class TestRepoSyncSchedule(testutil.PulpAsyncTest):
     def test_clone(self, id = 'some-id', clone_id = 'clone-some-id-parent', clone_id1 = 'clone-some-id-origin',
                    clone_id2 = 'clone-some-id-none'):
 
-        repo = self.repo_api.create(id, 'some name', 'i386',
-                                'http://repos.fedorapeople.org/repos/pulp/pulp/fedora-15/x86_64/')
+        repo = self.repo_api.create(id, 'some name', 'x86_64',
+                'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/pulp_unittest/')
         self.assertTrue(repo is not None)
         try:
             repo_sync._sync(repo['id'])
@@ -171,8 +171,8 @@ class TestRepoSyncSchedule(testutil.PulpAsyncTest):
     def test_clone_publish(self, id = 'some-id', clone_id = 'clone-publish-true', clone_id1 = 'clone-publish-false',
                            clone_id2 = 'clone-publish-default'):
 
-        repo = self.repo_api.create(id, 'some name', 'i386',
-                                'http://repos.fedorapeople.org/repos/pulp/pulp/fedora-15/x86_64/')
+        repo = self.repo_api.create(id, 'some name', 'x86_64',
+                'http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/pulp_unittest/')
         self.assertTrue(repo is not None)
         try:
             repo_sync._sync(repo['id'])
