@@ -20,7 +20,7 @@ yum groupinstall -y "Development Tools"
 
 # We will install latest pulp RPMs to bring down all the deps, then we'll remove the pulp RPMs later.
 yum install -y pulp pulp-admin pulp-consumer gofer gofer-package
-yum install -y python-nose python-paste python-mock
+yum install -y python-nose python-paste python-mock rpmlint
 
 service pulp-server init
 
