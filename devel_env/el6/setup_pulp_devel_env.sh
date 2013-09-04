@@ -10,17 +10,18 @@ rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.r
 
 wget -O /etc/yum.repos.d/testing_rpms_rhui.repo http://${RHUI_BUILD_HOST}/pub/testing_rpms_rhui.repo
 
-# Installing mongodb-server first and starting since it takes a few minutes for initial mongodb to come up
-# mongo will work on this while we continue to install other RPMs
-yum install -y mongodb-server
-chkconfig mongod on
-service mongod restart
-
 yum groupinstall -y "Development Tools"
 
 # We will install latest pulp RPMs to bring down all the deps, then we'll remove the pulp RPMs later.
 yum install -y pulp pulp-admin pulp-consumer gofer gofer-package
 yum install -y python-nose python-paste python-mock rpmlint
+
+# Note, pulp v1 requires mongodb-server-1.8.2, don't install a newer mongo
+# pymongo 1.9 is required
+chkconfig mongod on
+service mongod restart
+echo "Sleeping 60 seconds to allow mongo initializations to complete"
+sleep 60
 
 service pulp-server init
 
