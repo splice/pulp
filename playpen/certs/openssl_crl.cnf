@@ -6,8 +6,8 @@ default_ca	= CA_default		# The default ca section
 
 ####################################################################
 [ CA_default ]
-database = REPLACE_CRL_DATABASE_FILE
-crlnumber = REPLACE_CRL_NUMBER_FILE
+database = ./certs/index
+crlnumber = ./certs/crlnumber
 
 
 default_days	= 10950			# how long to certify for

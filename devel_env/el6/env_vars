@@ -1,0 +1,4 @@
+export RHUI_BUILD_HOST=ec2-50-17-26-28.compute-1.amazonaws.com
+export PULP_GIT_PATH=/vagrant
+
+

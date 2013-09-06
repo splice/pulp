@@ -13,4 +13,6 @@ dist
 .idea
 .coverage
 cover
+.vagrant
+devel_env/el6/log_setup_pulp_devel_env
 

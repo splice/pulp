@@ -300,7 +300,7 @@ class CdsApiTests(testutil.PulpAsyncTest):
         '''
 
         # Setup
-        self.cds_api.register('update-cds', 'name-1', 'description-1', 'P1D', 'group-1')
+        self.cds_api.register('update-cds', 'client-name-1', 'name-1', 'description-1', 'P1D', 'group-1')
 
         # Test
         delta = {
@@ -318,7 +318,7 @@ class CdsApiTests(testutil.PulpAsyncTest):
         '''
 
         # Setup
-        self.cds_api.register('update-cds', 'name-1', 'description-1', 'P1D', 'group-1')
+        self.cds_api.register('update-cds', 'client-name-1', 'name-1', 'description-1', 'P1D', 'group-1')
 
         # Test
         delta = {
@@ -336,7 +336,7 @@ class CdsApiTests(testutil.PulpAsyncTest):
         '''
 
         # Setup
-        self.cds_api.register('update-cds', 'name-1', 'description-1', 'P1D', 'group-1')
+        self.cds_api.register('update-cds', 'client-name-1', 'name-1', 'description-1', 'P1D', 'group-1')
 
         # Test
         delta = {
@@ -423,7 +423,7 @@ class CdsApiTests(testutil.PulpAsyncTest):
         '''
 
         # Setup
-        self.cds_api.register('update-cds', 'name-1', 'description-1', 'P1D', 'group-1')
+        self.cds_api.register('update-cds', 'client-name-1', 'name-1', 'description-1', 'P1D', 'group-1')
 
         # Test
         delta = {

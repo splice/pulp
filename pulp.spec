@@ -35,7 +35,7 @@ BuildRequires:  python-nose
 BuildRequires:  rpm-python
 
 Requires: %{name}-common = %{version}
-Requires: pymongo >= 1.9
+Requires: pymongo = 1.9
 Requires: python-setuptools
 Requires: python-webpy
 Requires: python-simplejson >= 2.0.9
@@ -52,8 +52,8 @@ Requires: python-gofer >= 0.64
 Requires: crontabs
 Requires: acl
 Requires: mod_wsgi >= 3.3-1.pulp
-Requires: mongodb
-Requires: mongodb-server
+Requires: mongodb = 1.8.2
+Requires: mongodb-server = 1.8.2
 Requires: qpid-cpp-server
 %if 0%{?rhel} == 5
 Requires: m2crypto
