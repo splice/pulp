@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        33%{?dist}
+Release:        34%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -531,6 +531,31 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Fri Sep 06 2013 Unknown name 0.0.263-34
+- Update devel_env so mongodb-server installed will be the version required by
+  pulp, this is to ensure we don't install a newer mongodb-server.  Pulp
+  requires an older version of mongodb-server 1.8.2 (jwmatthews@gmail.com)
+- Merge branch 'rhui' of github.com:splice/pulp into rhui (dgao@redhat.com)
+- 952912 - CDS unassociated repos don't get cleaned up repos directory after
+  sync (dgao@redhat.com)
+- Update days in openssl conf file for any new certs we generate
+  (jwmatthews@gmail.com)
+- Updated certs/crl for test_repo_cert_utils to pass (jwmatthews@gmail.com)
+- Bump the -days entry so generated certs are good for a few years
+  (jwmatthews@gmail.com)
+- Updated expired certs so test_oid_validation now passes
+  (jwmatthews@gmail.com)
+- Update test_cds_api unit tests to account for addition of 'client_hostname'
+  in May 2012. (jwmatthews@gmail.com)
+- Adding an explicit requires on mongodb 1.8 and pymongo 1.9.
+  (jwmatthews@gmail.com)
+- Installing rpmlint for devel_setup (jwmatthews@gmail.com)
+- Update with new repo URL since prior URL is no longer valid
+  (jwmatthews@gmail.com)
+- Tweaks so unit tests will run in Vagrant VM (jwmatthews@gmail.com)
+- Remove devel env log file from git (jwmatthews@gmail.com)
+- Adding a Vagrant development environment (jwmatthews@gmail.com)
+
 * Thu Jun 20 2013 James Slagle <jslagle@redhat.com> 0.0.263-33
 - 860800 - merge the errata spanning across multiple repos if their pkglist
   collection doesnt match (pkilambi@redhat.com)
