@@ -402,7 +402,9 @@ class CdsLib(object):
             log.info('Removing old repo [%s]' % doomed)
 
             if os.path.exists(doomed):
-                shutil.rmtree(doomed)
+                shutil.rmtree(doomed) # removes repodata / packages file
+                search_start_dir = '/'.join(doomed.split('/')[:-1])
+                self._delete_empty_dirs(search_start_dir, packages_dir)
             else:
                 log.warn('Repository at [%s] could not be found for deletion' % doomed)
 
@@ -438,6 +440,66 @@ class CdsLib(object):
         repos_file = open(os.path.join(packages_location, REPO_LIST_FILENAME), 'w')
         repos_file.write('')
         repos_file.close()
+
+    def _delete_empty_dirs(self, path, root_path):
+        '''
+        Cleanup function to wipe out empty directories after a repo delete.
+        '''
+
+        # @var path is the bottom of the tree, going upward
+        working_path = path
+
+        log.info('Cleaning up repo directories, starting from [%s]' % (working_path))
+
+        while not os.path.samestat(os.lstat(root_path), os.lstat(working_path)):
+            try:
+                os.rmdir(working_path)
+                working_path = os.path.abspath(working_path + "/../")
+            except OSError as ose:
+                # folder w/ contents
+                if self._delete_empty_sibling_dirs(working_path):
+                    working_path = os.path.abspath(working_path + "/../")
+                else:
+                    # file has been detected, this is as far as we can go
+                    log.info('File has been detected at [%s], stopping cleaning effort' % (working_path))
+                    break
+
+    def _delete_empty_sibling_dirs(self, path):
+        '''
+        Helper method for _delete_empty_dirs().
+        '''
+
+        log.debug('Starting to search for empty sibling directories at [%s]' % (path))
+        if os.path.exists(path):
+            for current_dir, folders, filenames in os.walk(path):
+                if sum([len(folders), len(filenames)]) == 0:
+                    # nothing, clean it
+                    log.debug('Deleting [%s]' % current_dir)
+                    shutil.rmtree(current_dir)
+                    return True
+                elif len(filenames) > 0:
+                    # current_dir cannot be deleted!
+
+                    # but see if sibling folders are empty, if so delete them
+                    for dir in folders:
+                        next_path = os.path.abspath('%s/%s' % (current_dir, dir))
+                        delete_empty_sibling_dirs(next_path)
+
+                    return False
+                else:
+                    # no files, only dirs in current_dir
+                    for dir in folders:
+                        state = True
+                        next_path = os.path.abspath('%s/%s' % (current_dir, dir))
+                        state = state and self._delete_empty_sibling_dirs(next_path)
+
+                    if state:
+                        log.debug('Deleting [%s]' % current_dir)
+                        shutil.rmtree(current_dir)
+            return True
+        else:
+            log.warn('Bad path detected: [%s]' % path)
+            return False
 
 
 class SecretFile:
