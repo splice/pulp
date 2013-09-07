@@ -55,6 +55,10 @@ Requires: mod_wsgi >= 3.3-1.pulp
 Requires: mongodb = 1.8.2
 Requires: mongodb-server = 1.8.2
 Requires: qpid-cpp-server
+
+# required by ExportController
+Requires: genisoimage 
+
 %if 0%{?rhel} == 5
 Requires: m2crypto
 %else
