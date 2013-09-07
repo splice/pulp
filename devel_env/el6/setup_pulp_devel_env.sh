@@ -40,26 +40,24 @@ popd
 pulp-migrate
 
 # Update /etc/pulp/pulp.conf
-sed -i "s/^server_name:.*/server_name: pulp.example.com/" /etc/pulp/pulp.conf
-sed -i "s/^url:.*/url: tcp:\/\/pulp.example.com:5672/" /etc/pulp/pulp.conf
+sed -i "s/^server_name:.*/server_name: ${VM_HOSTNAME}/" /etc/pulp/pulp.conf
+sed -i "s/^url:.*/url: tcp:\/\/${VM_HOSTNAME}:5672/" /etc/pulp/pulp.conf
 
 # Update /etc/pulp/admin/admin.conf
-sed -i "s/^host.*/host = pulp.example.com/" /etc/pulp/admin/admin.conf
+sed -i "s/^host.*/host = ${VM_HOSTNAME}/" /etc/pulp/admin/admin.conf
 
 service qpidd restart
 service pulp-server restart
 
-yum install -y vim-enhanced
-cp ./dotfiles/dot.vimrc /root/.vimrc
-cp ./dotfiles/dot.vimrc /home/vagrant/.vimrc
-chown vagrant /home/vagrant/.vimrc
-
 pulp-admin auth login --username admin --password admin
 pulp-admin repo create --id simple_errata --feed http://repos.fedorapeople.org/repos/pulp/pulp/demo_repos/test_errata_install/
 
+# Note, Pulp intentionally locks down all config files under /etc/pulp 
+# and prevents non-root/apache from reading.  This creates problems
+# when we want to run the unit tests as a non-root user, eg: vagrant
+# Therefore we are intentionally changing the permissions, just from the devel-env
+chmod -R a+rX /etc/pulp
+
 echo "Pulp devel enviroment is setup"
-echo "Run: 'vagrant ssh' to ssh into the Pulp devel env VM"
-echo " or ssh vagrant@pulp.example.com   (Password is 'vagrant')"
-echo "Enjoy."
 
 
