@@ -4,6 +4,7 @@
 $setup_script = <<EOF
 cd /vagrant/devel_env/el6
 ./setup_pulp_devel_env.sh | tee log_setup_pulp_devel_env
+./setup_vm.sh | tee log_setup_vm
 EOF
 
 
