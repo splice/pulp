@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        34%{?dist}
+Release:        35%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,13 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Mon Sep 09 2013 John Matthews <jwmatthews@gmail.com> 0.0.263-35
+- Ensure Vagrantfile calls setup_vm.sh (jwmatthews@gmail.com)
+- Added missing requires on genisoimage which was breaking unit test for
+  ExportController (jwmatthews@gmail.com)
+- Broke out the devel env scripts to separate out the 'vagrant' specifics
+  (jwmatthews@gmail.com)
+
 * Fri Sep 06 2013 Unknown name 0.0.263-34
 - Update devel_env so mongodb-server installed will be the version required by
   pulp, this is to ensure we don't install a newer mongodb-server.  Pulp
