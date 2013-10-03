@@ -313,6 +313,8 @@ class CdsLib(object):
         num_threads = self.config.get('cds', 'sync_threads')
         content_base = self.config.get('cds', 'packages_dir')
         packages_dir = os.path.join(content_base, 'packages')
+        remove_old = self.config.getboolean('cds', 'remove_old_versions')
+        num_old_pkgs_keep = self.config.getint('cds', 'num_old_pkgs_keep')
 
         url = '%s/%s' % (base_url, repo['relative_path'])
         log.info('Synchronizing repo at [%s]' % url)
@@ -355,10 +357,12 @@ class CdsLib(object):
         verify_options["checksum"] = self.config.getboolean('cds', "verify_checksum")
         fetch = YumRepoGrinder('', url, num_threads, sslverify=ssl_verify,
                                cacert=feed_ca, clicert=feed_cert,
-                               packages_location=packages_dir)
-        fetch.fetchYumRepo(repo_path, verify_options=verify_options)
+                               packages_location=packages_dir,
+                               remove_old=remove_old, numOldPackages=num_old_pkgs_keep)
+        report = fetch.fetchYumRepo(repo_path, verify_options=verify_options)
 
         log.info('Successfully finished synccing [%s]' % url)
+        return report
 
     def _delete_removed_repos(self, repos):
         '''
