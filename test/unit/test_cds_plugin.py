@@ -12,6 +12,7 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+import glob
 import os
 import sys
 import shutil
@@ -42,13 +43,14 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
 
         if not self.config.has_section('cds'):
             self.config.add_section('cds')
-        self.config.set('cds', 'packages_dir', os.path.join(ROOTDIR, 'packages'))
+        self.packages_dir = os.path.join(ROOTDIR, 'packages')
+        self.config.set('cds', 'packages_dir', self.packages_dir)
         self.config.set('cds', 'sync_threads', '3')
         self.config.set('cds', 'verify_size', 'false')
         self.config.set('cds', 'verify_checksum', 'false')
-        self.config.set('cds', 'remove_old_versions', 'false')
-        self.config.set('cds', 'num_old_pkgs_keep', '0') # value will be ignored when remove_old_versions=false
-        self.cds = CdsLib(self.config)
+        if not self.config.has_section('server'):
+            self.config.add_section('server')
+        self.config.set('server', 'ca_cert_file', os.path.join(ROOTDIR, "empty_ca_cert_file"))
 
         if os.path.exists(TEST_STORAGE_FILE):
             os.remove(TEST_STORAGE_FILE)
@@ -69,10 +71,12 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
         storage.DEFAULT_FILE_LOCK = self.storage_default_lock
 
     def test_initialize(self):
-        self.cds.initialize()
+        cds = CdsLib(self.config)
+        cds.initialize()
 
     def test_release(self):
-        self.cds.release()
+        cds = CdsLib(self.config)
+        cds.release()
 
     def test_secret(self):
         uuid = 'mysecret'
@@ -95,29 +99,113 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
             "id":"cdsplugin_test_basic_sync_repo_id",
             "relative_path":"repo_multiple_versions"
         }
-        report = self.cds._sync_repo(base_url, repo)
-        self.assertEqual(report.downloads, 12)
 
-    def test_sync_with_remove_old_packages(self):
+        self.config.remove_option("cds", "remove_old_versions")
+        self.config.remove_option("cds", "num_old_pkgs_keep")
+        cds = CdsLib(self.config)
+
+        sync_data = {}
+        sync_data['repos'] = [repo]
+        sync_data['repo_base_url'] = base_url
+        sync_data['repo_cert_bundles'] = {repo["id"]:None}
+        sync_data['global_cert_bundle'] = {}
+        sync_data['cluster_id'] = "test_cluster"
+        sync_data['cluster_members'] = ["test_cds_hostname_1"]
+        sync_data['server_ca_cert'] = None
+
+        cds.sync(sync_data)
+        # Find the number of .rpms under self.packages_dir
+        synced_rpms = glob.glob("%s/*.rpm" % (os.path.join(self.packages_dir, "repos", repo["relative_path"])))
+        self.assertEqual(len(synced_rpms), 12)
+
+    def test_sync_with_remove_old_sync_data(self):
         base_url = "http://jmatthews.fedorapeople.org"
         repo = {
             "name":"cdsplugin_test_basic_sync_repo_name",
             "id":"cdsplugin_test_basic_sync_repo_id",
             "relative_path":"repo_multiple_versions"
         }
-        config = testutil.load_test_config()
-        if not config.has_section('cds'):
-            config.add_section('cds')
-        config.set('cds', 'packages_dir', os.path.join(ROOTDIR, 'packages'))
-        config.set('cds', 'sync_threads', '3')
-        config.set('cds', 'verify_size', 'false')
-        config.set('cds', 'verify_checksum', 'false')
-        config.set('cds', 'remove_old_versions', 'true')
-        config.set('cds', 'num_old_pkgs_keep', '2')
-        cds = CdsLib(config)
+
+        self.config.remove_option("cds", "remove_old_versions")
+        self.config.remove_option("cds", "num_old_pkgs_keep")
+        cds = CdsLib(self.config)
+
+        sync_data = {}
+        sync_data['repos'] = [repo]
+        sync_data['repo_base_url'] = base_url
+        sync_data['repo_cert_bundles'] = {repo["id"]:None}
+        sync_data['global_cert_bundle'] = {}
+        sync_data['cluster_id'] = "test_cluster"
+        sync_data['cluster_members'] = ["test_cds_hostname_1"]
+        sync_data['server_ca_cert'] = None
+        sync_data['remove_old_versions'] = 'true'
+        sync_data['num_old_pkgs_keep'] = '5'
+
+        cds.sync(sync_data)
+        # Find the number of .rpms under self.packages_dir
+        synced_rpms = glob.glob("%s/*.rpm" % (os.path.join(self.packages_dir, "repos", repo["relative_path"])))
+        self.assertEqual(len(synced_rpms), 6)
+
+    def test_cds_confg_sync_options_overrule_sync_data_options(self):
+        base_url = "http://jmatthews.fedorapeople.org"
+        repo = {
+            "name":"cdsplugin_test_basic_sync_repo_name",
+            "id":"cdsplugin_test_basic_sync_repo_id",
+            "relative_path":"repo_multiple_versions"
+        }
+
+        self.config.set("cds", "remove_old_versions", "true")
+        self.config.set("cds", "num_old_pkgs_keep", "1")
+        cds = CdsLib(self.config)
+
+        sync_data = {}
+        sync_data['repos'] = [repo]
+        sync_data['repo_base_url'] = base_url
+        sync_data['repo_cert_bundles'] = {repo["id"]:None}
+        sync_data['global_cert_bundle'] = {}
+        sync_data['cluster_id'] = "test_cluster"
+        sync_data['cluster_members'] = ["test_cds_hostname_1"]
+        sync_data['server_ca_cert'] = None
+        sync_data['remove_old_versions'] = 'false'
+        sync_data['num_old_pkgs_keep'] = '0'
+
+        cds.sync(sync_data)
+        # Find the number of .rpms under self.packages_dir
+        synced_rpms = glob.glob("%s/*.rpm" % (os.path.join(self.packages_dir, "repos", repo["relative_path"])))
+        self.assertEqual(len(synced_rpms), 2)
+
+
+    def test_basic_priv_sync(self):
+        base_url = "http://jmatthews.fedorapeople.org"
+        repo = {
+            "name":"cdsplugin_test_basic_sync_repo_name",
+            "id":"cdsplugin_test_basic_sync_repo_id",
+            "relative_path":"repo_multiple_versions"
+        }
+        self.config.remove_option('cds', 'remove_old_versions')
+        self.config.remove_option('cds', 'num_old_pkgs_keep')
+
+        cds = CdsLib(self.config)
+        report = cds._sync_repo(base_url, repo)
+        synced_rpms = glob.glob("%s/*.rpm" % (os.path.join(self.packages_dir, "repos", repo["relative_path"])))
+        self.assertEqual(len(synced_rpms), 12)
+        self.assertEqual(report.downloads, 12)
+
+    def test_priv_sync_with_remove_old_packages(self):
+        base_url = "http://jmatthews.fedorapeople.org"
+        repo = {
+            "name":"cdsplugin_test_basic_sync_repo_name",
+            "id":"cdsplugin_test_basic_sync_repo_id",
+            "relative_path":"repo_multiple_versions"
+        }
+        self.config.set('cds', 'remove_old_versions', 'true')
+        self.config.set('cds', 'num_old_pkgs_keep', '2')
+        cds = CdsLib(self.config)
         report = cds._sync_repo(base_url, repo)
         # Repo has 12 versions of the same package, we expect to 
         # Sync latest versions + 'num_old_pkgs_keep'
         # this means we expect 3 packages to be synced
+        synced_rpms = glob.glob("%s/*.rpm" % (os.path.join(self.packages_dir, "repos", repo["relative_path"])))
+        self.assertEqual(len(synced_rpms), 3)
         self.assertEqual(report.downloads, 3)
 

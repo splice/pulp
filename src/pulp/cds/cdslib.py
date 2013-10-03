@@ -69,6 +69,8 @@ def loginit(path=LOGPATH):
         log.setLevel(logging.DEBUG)
     return log
 
+def str2bool(v):
+  return v.lower() in ("yes", "true", "t", "1")
 
 class CdsLib(object):
 
@@ -130,6 +132,14 @@ class CdsLib(object):
         cluster_id = sync_data['cluster_id']
         cluster_members = sync_data['cluster_members']
         ca_cert_pem = sync_data['server_ca_cert']
+        
+        remove_old_versions = False
+        if sync_data.has_key('remove_old_versions'):
+            remove_old_versions = str2bool(sync_data['remove_old_versions'])
+
+        num_old_pkgs_keep = 0
+        if sync_data.has_key('num_old_pkgs_keep'):
+            num_old_pkgs_keep = int(sync_data['num_old_pkgs_keep'])
 
         packages_location = self.config.get('cds', 'packages_dir')
 
@@ -175,9 +185,10 @@ class CdsLib(object):
         successfully_syncced_repos = []
         for repo in repos:
             try:
-                self._sync_repo(base_url, repo)
+                self._sync_repo(base_url, repo, remove_old_versions=remove_old_versions, 
+                    num_old_pkgs_keep=num_old_pkgs_keep)
                 successfully_syncced_repos.append(repo)
-            except Exception:
+            except Exception, e:
                 log.exception('Error performing repo sync')
                 error_messages.append('Error synchronizing repository [%s]' % repo['id'])
 
@@ -297,7 +308,7 @@ class CdsLib(object):
         # files will be deleted.
         self.repo_cert_utils.write_global_repo_cert_bundle(bundle)
 
-    def _sync_repo(self, base_url, repo):
+    def _sync_repo(self, base_url, repo, remove_old_versions=False, num_old_pkgs_keep=0):
         '''
         Synchronizes a repository from the Pulp server.
 
@@ -310,11 +321,26 @@ class CdsLib(object):
         @type  repo: dict of str
         '''
 
+        log.info("CDS sync for repo <%s> at <%s> invoked with remove_old_versions=<%s>, num_old_pkgs_keep=<%s>" % \
+            (repo, base_url, remove_old_versions, num_old_pkgs_keep))
+        
         num_threads = self.config.get('cds', 'sync_threads')
         content_base = self.config.get('cds', 'packages_dir')
         packages_dir = os.path.join(content_base, 'packages')
-        remove_old = self.config.getboolean('cds', 'remove_old_versions')
-        num_old_pkgs_keep = self.config.getint('cds', 'num_old_pkgs_keep')
+        try:
+            cds_conf_remove_old_versions = self.config.getboolean('cds', 'remove_old_versions')
+            log.info("Using value of 'remove_old_versions'='%s' from cds config" % (cds_conf_remove_old_versions))
+            remove_old_versions = cds_conf_remove_old_versions
+        except Exception, e:
+            pass # It's OK if cds conf lacks this setting.
+
+        try:
+            cds_conf_num_old_pkgs_keep = self.config.getint('cds', 'num_old_pkgs_keep')
+            log.info("Using value of 'num_old_pkgs_keep'='%s' from cds config" % (cds_conf_num_old_pkgs_keep))
+            num_old_pkgs_keep = cds_conf_num_old_pkgs_keep
+        except Exception, e:
+            pass # It's OK if cds conf lacks this setting.
+
 
         url = '%s/%s' % (base_url, repo['relative_path'])
         log.info('Synchronizing repo at [%s]' % url)
@@ -358,10 +384,11 @@ class CdsLib(object):
         fetch = YumRepoGrinder('', url, num_threads, sslverify=ssl_verify,
                                cacert=feed_ca, clicert=feed_cert,
                                packages_location=packages_dir,
-                               remove_old=remove_old, numOldPackages=num_old_pkgs_keep)
+                               remove_old=remove_old_versions, numOldPackages=num_old_pkgs_keep)
         report = fetch.fetchYumRepo(repo_path, verify_options=verify_options)
 
         log.info('Successfully finished synccing [%s]' % url)
+        log.info("CDS Sync report for [%s]: %s" % (url, report))
         return report
 
     def _delete_removed_repos(self, repos):
