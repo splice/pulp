@@ -549,6 +549,10 @@ class CdsApi(BaseApi):
         repo_relative_url = config.config.get('server', 'relative_url')
         repo_base_url = '%s/%s' % (server_url, repo_relative_url)
 
+        # Options to control if we limit syncing older packages
+        remove_old_versions = config.config.get('yum', 'remove_old_versions')
+        num_old_pkgs_keep = config.config.get('yum', 'num_old_pkgs_keep')
+
         # Global cert bundle, if any (repo cert bundles are handled above)
         global_cert_bundle = repo_cert_utils.read_global_cert_bundle()
 
@@ -569,8 +573,11 @@ class CdsApi(BaseApi):
             'cluster_id'         : cluster_id,
             'cluster_members'    : member_client_hostnames,
             'server_ca_cert'     : server_ca_certificate,
+            'remove_old_versions' : remove_old_versions,
+            'num_old_pkgs_keep' : num_old_pkgs_keep
         }
 
+        log.info("Invoking CDS sync to %s with payload of %s" % (cds_hostname, payload))
         # -- dispatch -------------------------------------
 
         # Call out to dispatcher to trigger sync, adding the appropriate history entries
@@ -617,6 +624,7 @@ class CdsApi(BaseApi):
         now = datetime.datetime.now(dateutils.local_tz())
         last_sync = dateutils.format_iso8601_datetime(now)
         self.collection.update({"hostname":cds_hostname}, {"$set":{"last_sync":last_sync}})
+        log.info("CDS sync completed for %s at %s" % (cds_hostname, last_sync))
 
         # Make sure the caller gets the error like normal (after the event logging) if
         # one occurred
