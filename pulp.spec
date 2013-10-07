@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        35%{?dist}
+Release:        36%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,18 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Mon Oct 07 2013 John Matthews <jwmatthews@gmail.com> 0.0.263-36
+- CDS is now able to use a loging config file, similar to pulp server
+  (jwmatthews@gmail.com)
+- 996198 - CDS sync should not attempt to sync older packages which have been
+  removed from RHUA by way of 'num_old_packages_keep' (jwmatthews@gmail.com)
+- 996198 - CDS sync should not attempt to sync older packages which have been
+  removed from RHUA by way of 'num_old_packages_keep' (jwmatthews@gmail.com)
+- 996198 - CDS sync should not attempt to sync older packages which have been
+  removed from RHUA by way of 'num_old_packages_keep' (jwmatthews@gmail.com)
+- Commenting out a test which causes an intermittent failure state.
+  (jwmatthews@gmail.com)
+
 * Mon Sep 09 2013 John Matthews <jwmatthews@gmail.com> 0.0.263-35
 - Ensure Vagrantfile calls setup_vm.sh (jwmatthews@gmail.com)
 - Added missing requires on genisoimage which was breaking unit test for
