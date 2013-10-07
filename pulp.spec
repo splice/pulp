@@ -436,7 +436,6 @@ fi
 %attr(750, apache, apache) %{_sysconfdir}/pulp/admin
 %attr(640, apache, apache) %{_sysconfdir}/pulp/*.conf
 %attr(640, apache, apache) %{_sysconfdir}/pulp/*/*.conf
-%attr(640, apache, apache) %{_sysconfdir}/pulp/logging/*.cfg
 %ghost %{_sysconfdir}/yum.repos.d/pulp.repo
 %attr(-, apache, apache) /srv/pulp/webservices.wsgi
 %attr(-, apache, apache) /srv/pulp/repo_auth.wsgi
@@ -457,6 +456,7 @@ fi
 %doc
 %{python_sitelib}/pulp/__init__.*
 %{python_sitelib}/pulp/common/
+%attr(640, apache, apache) %{_sysconfdir}/pulp/logging/*.cfg
 
 # -- files - pulp client lib -----------------------------------------------------
 

@@ -23,51 +23,25 @@ from pulp.repo_auth.protected_repo_utils import ProtectedRepoUtils
 
 # -- constants ---------------------------------------------------------------
 
-LOGPATH = '/var/log/pulp-cds/gofer.log'
 REPO_LIST_FILENAME = '.cds_repo_list'
-TIME = '%(asctime)s'
-LEVEL = ' [%(levelname)s]'
-THREAD = '[%(threadName)s]'
-FUNCTION = ' %(funcName)s()'
-FILE = ' @ %(filename)s'
-LINE = ':%(lineno)d'
-MSG = ' - %(message)s'
-
-if sys.version_info < (2,5):
-    FUNCTION = ''
-
-FMT = \
-    ''.join((TIME,
-            LEVEL,
-            THREAD,
-            FUNCTION,
-            FILE,
-            LINE,
-            MSG,))
 
 log = None
 
 # -- public ------------------------------------------------------------------
 
-def loginit(path=LOGPATH):
+def loginit(log_cfg_file=None):
     '''
-    Init log if (once).
-    @param path: The absolute path to the log file.
+    Configures the Python's logger based on a configuration file.
+    @param log_cfg_file: The absolute path to a logging configuration file
     @type path: str
-    @return: The logger.
+    @return: None
     @rtype: Logger
     '''
     global log
-    if log is None:
-        logdir = os.path.dirname(path)
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-        log = logging.getLogger(__name__)
-        handler = logging.FileHandler(path)
-        handler.setFormatter(logging.Formatter(FMT))
-        log.addHandler(handler)
-        log.setLevel(logging.DEBUG)
-    return log
+    if not os.access(log_cfg_file, os.R_OK):
+        raise RuntimeError("Unable to read log configuration file: %s" % (log_cfg_file))
+    logging.config.fileConfig(log_cfg_file)
+    log = logging.getLogger(__name__) 
 
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
@@ -84,7 +58,9 @@ class CdsLib(object):
         self.repo_cert_utils = RepoCertUtils(self.config)
         self.protected_repo_utils = ProtectedRepoUtils(self.config)
         
-        loginit()
+        log_config_file = self.config.get('logs', 'config')
+        loginit(log_cfg_file=log_config_file)
+
 
     def initialize(self):
         '''
@@ -343,7 +319,6 @@ class CdsLib(object):
 
 
         url = '%s/%s' % (base_url, repo['relative_path'])
-        log.info('Synchronizing repo at [%s]' % url)
         repo_path = os.path.join(content_base, 'repos', repo['relative_path'])
 
         if not os.path.exists(repo_path):
@@ -387,7 +362,6 @@ class CdsLib(object):
                                remove_old=remove_old_versions, numOldPackages=num_old_pkgs_keep)
         report = fetch.fetchYumRepo(repo_path, verify_options=verify_options)
 
-        log.info('Successfully finished synccing [%s]' % url)
         log.info("CDS Sync report for [%s]: %s" % (url, report))
         return report
 

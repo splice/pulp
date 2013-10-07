@@ -31,7 +31,7 @@ TEST_STORAGE_FILE = '/tmp/cds-plugin-storage-test'
 TEST_LOCK_FILE = '/tmp/cds-plugin-storage-lock'
 
 # setup logging
-loginit(os.path.join(ROOTDIR, 'cds.log'))
+loginit(os.path.abspath(os.path.dirname(__file__)) + '/../../etc/pulp/logging/unit_tests.cfg')
 
 class TestCdsPlugin(testutil.PulpAsyncTest):
 
