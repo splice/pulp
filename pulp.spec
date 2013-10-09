@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        36%{?dist}
+Release:        37%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,11 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Wed Oct 09 2013 John Matthews <jwmatthews@gmail.com> 0.0.263-37
+- Changed cds config 'remove_old_versions' to 'cds_remove_old_versions' to
+  account INIConfig treating any entry starting with 'rem' as a comment.
+  (jwmatthews@gmail.com)
+
 * Mon Oct 07 2013 John Matthews <jwmatthews@gmail.com> 0.0.263-36
 - CDS is now able to use a loging config file, similar to pulp server
   (jwmatthews@gmail.com)
