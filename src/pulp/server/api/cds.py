@@ -573,7 +573,7 @@ class CdsApi(BaseApi):
             'cluster_id'         : cluster_id,
             'cluster_members'    : member_client_hostnames,
             'server_ca_cert'     : server_ca_certificate,
-            'remove_old_versions' : remove_old_versions,
+            'cds_remove_old_versions' : remove_old_versions,
             'num_old_pkgs_keep' : num_old_pkgs_keep
         }
 

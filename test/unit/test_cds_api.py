@@ -768,8 +768,8 @@ class CdsApiTests(testutil.PulpAsyncTest):
         self.assertTrue('server_ca_cert' in sync_payload)
         self.assertTrue(sync_payload['server_ca_cert'] is None)
 
-        self.assertTrue('remove_old_versions' in sync_payload)
-        self.assertEquals(sync_payload['remove_old_versions'], "true")
+        self.assertTrue('cds_remove_old_versions' in sync_payload)
+        self.assertEquals(sync_payload['cds_remove_old_versions'], "true")
 
         self.assertTrue('num_old_pkgs_keep' in sync_payload)
         self.assertEquals(sync_payload['num_old_pkgs_keep'], "6")

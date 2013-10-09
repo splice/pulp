@@ -58,7 +58,7 @@ class CdsLib(object):
         self.repo_cert_utils = RepoCertUtils(self.config)
         self.protected_repo_utils = ProtectedRepoUtils(self.config)
         
-        log_config_file = self.config.get('logs', 'config')
+        log_config_file = self.config.get('cds', 'log_config_file')
         loginit(log_cfg_file=log_config_file)
 
 
@@ -110,8 +110,8 @@ class CdsLib(object):
         ca_cert_pem = sync_data['server_ca_cert']
         
         remove_old_versions = False
-        if sync_data.has_key('remove_old_versions'):
-            remove_old_versions = str2bool(sync_data['remove_old_versions'])
+        if sync_data.has_key('cds_remove_old_versions'):
+            remove_old_versions = str2bool(sync_data['cds_remove_old_versions'])
 
         num_old_pkgs_keep = 0
         if sync_data.has_key('num_old_pkgs_keep'):
@@ -297,15 +297,15 @@ class CdsLib(object):
         @type  repo: dict of str
         '''
 
-        log.info("CDS sync for repo <%s> at <%s> invoked with remove_old_versions=<%s>, num_old_pkgs_keep=<%s>" % \
+        log.info("CDS sync for repo <%s> at <%s> invoked with cds_remove_old_versions=<%s>, num_old_pkgs_keep=<%s>" % \
             (repo, base_url, remove_old_versions, num_old_pkgs_keep))
         
         num_threads = self.config.get('cds', 'sync_threads')
         content_base = self.config.get('cds', 'packages_dir')
         packages_dir = os.path.join(content_base, 'packages')
         try:
-            cds_conf_remove_old_versions = self.config.getboolean('cds', 'remove_old_versions')
-            log.info("Using value of 'remove_old_versions'='%s' from cds config" % (cds_conf_remove_old_versions))
+            cds_conf_remove_old_versions = self.config.getboolean('cds', 'cds_remove_old_versions')
+            log.info("Using value of 'cds_remove_old_versions'='%s' from cds config" % (cds_conf_remove_old_versions))
             remove_old_versions = cds_conf_remove_old_versions
         except Exception, e:
             pass # It's OK if cds conf lacks this setting.
@@ -324,7 +324,6 @@ class CdsLib(object):
         if not os.path.exists(repo_path):
             os.makedirs(repo_path)
 
-        log.info('Synchronizing repo [%s] from [%s] to [%s]' % (repo['name'], url, repo_path))
 
         # If the repo is protected, add in the credentials
         feed_ca = feed_cert = None
@@ -356,6 +355,9 @@ class CdsLib(object):
         verify_options = {}
         verify_options["size"] = self.config.getboolean('cds', "verify_size")
         verify_options["checksum"] = self.config.getboolean('cds', "verify_checksum")
+        log.info('Synchronizing repo [%s] from [%s] to [%s]' % (repo['name'], url, repo_path))
+        log.info("Using options, url=%s, num_threads=%s, sslverify=%s, cacert=%s, clicert=%s, packages_location=%s, remove_old=%s, numOldPackages=%s" % \
+            (url, num_threads, ssl_verify, feed_ca, feed_cert, packages_dir, remove_old_versions, num_old_pkgs_keep))
         fetch = YumRepoGrinder('', url, num_threads, sslverify=ssl_verify,
                                cacert=feed_ca, clicert=feed_cert,
                                packages_location=packages_dir,

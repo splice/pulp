@@ -30,9 +30,6 @@ ROOTDIR = '/tmp/pulp-cds'
 TEST_STORAGE_FILE = '/tmp/cds-plugin-storage-test'
 TEST_LOCK_FILE = '/tmp/cds-plugin-storage-lock'
 
-# setup logging
-loginit(os.path.abspath(os.path.dirname(__file__)) + '/../../etc/pulp/logging/unit_tests.cfg')
-
 class TestCdsPlugin(testutil.PulpAsyncTest):
 
     def clean(self):
@@ -48,6 +45,7 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
         self.config.set('cds', 'sync_threads', '3')
         self.config.set('cds', 'verify_size', 'false')
         self.config.set('cds', 'verify_checksum', 'false')
+        self.config.set('cds', 'log_config_file', '/../../etc/pulp/logging/unit_tests.cfg')
         if not self.config.has_section('server'):
             self.config.add_section('server')
         self.config.set('server', 'ca_cert_file', os.path.join(ROOTDIR, "empty_ca_cert_file"))
@@ -100,7 +98,7 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
             "relative_path":"repo_multiple_versions"
         }
 
-        self.config.remove_option("cds", "remove_old_versions")
+        self.config.remove_option("cds", "cds_remove_old_versions")
         self.config.remove_option("cds", "num_old_pkgs_keep")
         cds = CdsLib(self.config)
 
@@ -126,7 +124,7 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
             "relative_path":"repo_multiple_versions"
         }
 
-        self.config.remove_option("cds", "remove_old_versions")
+        self.config.remove_option("cds", "cds_remove_old_versions")
         self.config.remove_option("cds", "num_old_pkgs_keep")
         cds = CdsLib(self.config)
 
@@ -138,7 +136,7 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
         sync_data['cluster_id'] = "test_cluster"
         sync_data['cluster_members'] = ["test_cds_hostname_1"]
         sync_data['server_ca_cert'] = None
-        sync_data['remove_old_versions'] = 'true'
+        sync_data['cds_remove_old_versions'] = 'true'
         sync_data['num_old_pkgs_keep'] = '5'
 
         cds.sync(sync_data)
@@ -154,7 +152,7 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
             "relative_path":"repo_multiple_versions"
         }
 
-        self.config.set("cds", "remove_old_versions", "true")
+        self.config.set("cds", "cds_remove_old_versions", "true")
         self.config.set("cds", "num_old_pkgs_keep", "1")
         cds = CdsLib(self.config)
 
@@ -166,7 +164,7 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
         sync_data['cluster_id'] = "test_cluster"
         sync_data['cluster_members'] = ["test_cds_hostname_1"]
         sync_data['server_ca_cert'] = None
-        sync_data['remove_old_versions'] = 'false'
+        sync_data['cds_remove_old_versions'] = 'false'
         sync_data['num_old_pkgs_keep'] = '0'
 
         cds.sync(sync_data)
@@ -182,7 +180,7 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
             "id":"cdsplugin_test_basic_sync_repo_id",
             "relative_path":"repo_multiple_versions"
         }
-        self.config.remove_option('cds', 'remove_old_versions')
+        self.config.remove_option('cds', 'cds_remove_old_versions')
         self.config.remove_option('cds', 'num_old_pkgs_keep')
 
         cds = CdsLib(self.config)
@@ -198,7 +196,7 @@ class TestCdsPlugin(testutil.PulpAsyncTest):
             "id":"cdsplugin_test_basic_sync_repo_id",
             "relative_path":"repo_multiple_versions"
         }
-        self.config.set('cds', 'remove_old_versions', 'true')
+        self.config.set('cds', 'cds_remove_old_versions', 'true')
         self.config.set('cds', 'num_old_pkgs_keep', '2')
         cds = CdsLib(self.config)
         report = cds._sync_repo(base_url, repo)
