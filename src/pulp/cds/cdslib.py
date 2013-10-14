@@ -178,7 +178,7 @@ class CdsLib(object):
             # have any repos.
             repos_file = open(os.path.join(packages_location, REPO_LIST_FILENAME), 'w')
             for r in successfully_syncced_repos:
-                repos_file.write(os.path.join('repos', r['relative_path']))
+                repos_file.write("%s,%s" % (r['id'], os.path.join('repos', r['relative_path'])))
                 repos_file.write('\n')
             repos_file.close()
 
@@ -380,6 +380,8 @@ class CdsLib(object):
                       on the CDS
         '''
 
+        error_messages = [] # keeps a running total of errors encountered to send back to the server
+
         packages_dir = self.config.get('cds', 'packages_dir')
 
         # Load the list of all currently syncced repos. If this can't be loaded, there
@@ -392,7 +394,7 @@ class CdsLib(object):
         repo_list_contents = repo_list_file.read()
         repo_list_file.close()
 
-        existing_repo_relative_urls = repo_list_contents.split()
+        existing_repo = [(r.split(",")[0], r.split(",")[1]) for r in repo_list_contents.split()]
 
         # Transform the list of repo dicts into just a list of relative URLs; this will
         # make the existence of a repo checking much simpler.
@@ -401,10 +403,22 @@ class CdsLib(object):
         sync_repo_relative_urls = [os.path.join('repos', r['relative_path']) for r in repos]
 
         # Determine the repos that are no longer supposed to be syncced
-        delete_us_relative_urls = [r for r in existing_repo_relative_urls if r not in sync_repo_relative_urls]
+        delete_us = [r for r in existing_repo if r[1] not in sync_repo_relative_urls]
 
         # Delete the local paths and protection for those repos
-        for relative_path in delete_us_relative_urls:
+        for repo_id, relative_path in delete_us:
+            # Delete repo auth certs
+            try:
+                self._set_repo_auth(repo_id, relative_path, None)
+            except Exception:
+                log.exception('Error deleting certificate bundle for repo [%s]' % repo_id)
+                error_messages.append('Error deleting certificate bundle for repo [%s]' % repo_id)
+
+            # Cleanup empty auth dir
+            path = os.path.join(self.config.get('repos', 'cert_location'), repo_id)
+            shutil.rmtree(path)
+            
+            # Delete/Cleanup package dirs
             doomed = os.path.join(packages_dir, relative_path)
             log.info('Removing old repo [%s]' % doomed)
 
@@ -417,6 +431,9 @@ class CdsLib(object):
 
             self.protected_repo_utils.delete_protected_repo(relative_path)
 
+        if len(error_messages) > 0:
+            raise Exception('The following errors occurred during the CDS sync: ' + ', '.join(error_messages))
+
     def _delete_all_repos(self):
         '''
         Cleanup function used when a CDS is unregistered to remove all of its repositories.
@@ -424,17 +441,32 @@ class CdsLib(object):
 
         # Load the list of all currently syncced repos. If this can't be loaded, there
         # isn't anything that can be done in terms of deleting old repos, so punch out early.        
+
+        error_messages = [] # keeps a running total of errors encountered to send back to the server
+
         packages_dir = self.config.get('cds', 'packages_dir')
         repo_list_filename = os.path.join(packages_dir, REPO_LIST_FILENAME)
         if not os.path.exists(repo_list_filename):
             return
 
         repo_list_file = open(repo_list_filename, 'r')
-        repo_paths = repo_list_file.read().split()
+        repo = [(r.split(",")[0], r.split(",")[1]) for r in repo_list_file.read().split()]
 
         # Delete the local paths for those urls
-        for path in repo_paths:
-            doomed = os.path.join(packages_dir, path)
+        for repo_id, relative_path in repo:
+            # Delete repo auth certs
+            try:
+                self._set_repo_auth(repo_id, relative_path, None)
+            except Exception:
+                log.exception('Error deleting certificate bundle for repo [%s]' % repo_id)
+                error_messages.append('Error deleting certificate bundle for repo [%s]' % repo_id)
+
+            # Cleanup empty auth dir
+            path = os.path.join(self.config.get('repos', 'cert_location'), repo_id)
+            shutil.rmtree(path)
+
+            # Delete/Cleanup package dirs
+            doomed = os.path.join(packages_dir, relative_path)
             log.info('Removing old repo [%s]' % doomed)
 
             if os.path.exists(doomed):
@@ -447,6 +479,9 @@ class CdsLib(object):
         repos_file = open(os.path.join(packages_location, REPO_LIST_FILENAME), 'w')
         repos_file.write('')
         repos_file.close()
+
+        if len(error_messages) > 0:
+            raise Exception('The following errors occurred during the CDS sync: ' + ', '.join(error_messages))
 
     def _delete_empty_dirs(self, path, root_path):
         '''
@@ -490,7 +525,7 @@ class CdsLib(object):
                     # but see if sibling folders are empty, if so delete them
                     for dir in folders:
                         next_path = os.path.abspath('%s/%s' % (current_dir, dir))
-                        delete_empty_sibling_dirs(next_path)
+                        self._delete_empty_sibling_dirs(next_path)
 
                     return False
                 else:
