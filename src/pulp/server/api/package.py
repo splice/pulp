@@ -288,7 +288,11 @@ class PackageApi(BaseApi):
         pkgs = self.packages(fields=["id"])
         pkgids = set([x["id"] for x in pkgs])
         orphans = list(pkgids.difference(repo_pkgids))
-        return list(self.collection.find({"id":{"$in":orphans}}, fields))
+        result = []
+        for chunk in self.__breakdown(orphans):
+            result.extend(list(self.collection.find({"id":{"$in":chunk}}, fields)))
+        #return list(self.collection.find({"id":{"$in":orphans}}, fields))
+        return result
 
     def get_package_checksums(self, filenames):
         '''
@@ -324,5 +328,16 @@ class PackageApi(BaseApi):
             # We only want to skip this check if restrict_ids is truly None
             q["id"] = {"$in":restrict_ids}
         return list(self.collection.find(q, fields))
-
+    
+    def __breakdown(self, record, step=1000):
+        """
+        Breakdown the record into smaller chunks 
+        @param record: list of record
+        @param step: optional, number of records in each chunk
+        @return record: chunk of record with size @step 
+        """
+        for i in xrange(0, len(record), step):
+            start = i
+            end = i+step
+            yield record[start:end]
 
