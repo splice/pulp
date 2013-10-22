@@ -291,7 +291,6 @@ class PackageApi(BaseApi):
         result = []
         for chunk in self.__breakdown(orphans):
             result.extend(list(self.collection.find({"id":{"$in":chunk}}, fields)))
-        #return list(self.collection.find({"id":{"$in":orphans}}, fields))
         return result
 
     def get_package_checksums(self, filenames):
