@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        37%{?dist}
+Release:        38%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,13 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Tue Oct 22 2013 David Gao <dgao@redhat.com> 0.0.263-38
+- delete cruft from last commit (dgao@redhat.com)
+- 988540 - pulp-admin content list --orphan results in InvalidDocument:
+  document too large (dgao@redhat.com)
+- 906371 - gofer doesn't remove consumer certificates of a removed repository
+  (dgao@redhat.com)
+
 * Wed Oct 09 2013 John Matthews <jwmatthews@gmail.com> 0.0.263-37
 - Changed cds config 'remove_old_versions' to 'cds_remove_old_versions' to
   account INIConfig treating any entry starting with 'rem' as a comment.
