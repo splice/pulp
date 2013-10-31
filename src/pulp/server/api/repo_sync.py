@@ -326,6 +326,9 @@ def _sync(repo_id, skip=None, progress_callback=None, synchronizer=None,
         synchronizer.progress_callback(step="Finished")
         return True
     finally:
+        now = datetime.now(dateutils.local_tz())
+        repo_api.collection.update({"id":repo_id},
+                                   {"$set":{"last_sync_attempt":dateutils.format_iso8601_datetime(now)}})
         repo_api.set_sync_in_progress(repo_id, False)
 
 
