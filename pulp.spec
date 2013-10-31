@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        38%{?dist}
+Release:        39%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Thu Oct 31 2013 David Gao <dgao@redhat.com> 0.0.263-39
+- added last_sync_attempt flag to repo model set last_sync_attempt flag during
+  repo sync regardless of success or failure (dgao@redhat.com)
+
 * Tue Oct 22 2013 David Gao <dgao@redhat.com> 0.0.263-38
 - delete cruft from last commit (dgao@redhat.com)
 - 988540 - pulp-admin content list --orphan results in InvalidDocument:
