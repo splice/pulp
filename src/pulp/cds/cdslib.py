@@ -425,7 +425,7 @@ class CdsLib(object):
             if os.path.exists(doomed):
                 shutil.rmtree(doomed) # removes repodata / packages file
                 search_start_dir = '/'.join(doomed.split('/')[:-1])
-                self._delete_empty_dirs(search_start_dir, packages_dir)
+                self._delete_empty_dirs(search_start_dir, os.path.join(packages_dir, 'repos'))
             else:
                 log.warn('Repository at [%s] could not be found for deletion' % doomed)
 
@@ -471,6 +471,8 @@ class CdsLib(object):
 
             if os.path.exists(doomed):
                 shutil.rmtree(doomed)
+                search_start_dir = '/'.join(doomed.split('/')[:-1])
+                self._delete_empty_dirs(search_start_dir, os.path.join(packages_dir, 'repos'))
             else:
                 log.warn('Repository at [%s] could not be found for deletion' % doomed)
 
