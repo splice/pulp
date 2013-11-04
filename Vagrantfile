@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+CLOUDE_GIT_CHECKOUT="../../cloude"
+
 $setup_script = <<EOF
 cd /vagrant/devel_env/el6
 ./setup_pulp_devel_env.sh | tee log_setup_pulp_devel_env
@@ -30,6 +32,10 @@ Vagrant.configure("2") do |config|
   # Bridged networks make the machine appear as another physical device on
   # your network.
   # config.vm.network :public_network
+  
+  if File.directory? CLOUDE_GIT_CHECKOUT
+    config.vm.synced_folder CLOUDE_GIT_CHECKOUT, "/cloude"
+  end
 
   config.vm.provision :shell, :inline => $setup_script
 end
