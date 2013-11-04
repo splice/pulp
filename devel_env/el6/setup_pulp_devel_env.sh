@@ -6,14 +6,19 @@ sed -i "s/^SELINUX.*/SELINUX=permissive/" /etc/selinux/config
 service iptables stop
 chkconfig iptables off
 
+
+
 rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 
 wget -O /etc/yum.repos.d/testing_rpms_rhui.repo http://${RHUI_BUILD_HOST}/pub/testing_rpms_rhui.repo
 
 yum groupinstall -y "Development Tools"
-
+#
 # We will install latest pulp RPMs to bring down all the deps, then we'll remove the pulp RPMs later.
-yum install -y pulp pulp-admin pulp-consumer gofer gofer-package
+# pulp-v1 requires an older version of mongodb, we must disable epel when installing pulp
+#  if you do not disable epel, then there will be a conflict with pymongo
+#
+yum --disablerepo=epel install -y pulp pulp-admin pulp-consumer gofer gofer-package
 yum install -y python-nose python-paste python-mock rpmlint
 
 # Note, pulp v1 requires mongodb-server-1.8.2, don't install a newer mongo
