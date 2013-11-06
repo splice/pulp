@@ -10,11 +10,16 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+from ConfigParser import SafeConfigParser
+from os import listdir
+from os.path import exists, isfile, join
 from pulp.repo_auth import oid_validation, identity_validation, auth_enabled_validation
 
 # -- constants --------------------------------------------------------------------
 
-REQUIRED_PLUGINS = ()
+CONFIG_FILENAME = '/etc/pulp/repo_auth.conf'
+
+REQUIRED_PLUGINS = []
 
 # The auth_enabled_validation runs first to prevent other plugins from running in
 # case the config indicates repo auth should not be run
@@ -31,6 +36,7 @@ def check_password(environ, user, password):
     @return: True if the request is authorized, otherwise False.
     @rtype:  Boolean
     '''
+    _load_plugins(environ)
     authorized = _handle(environ)
     return authorized
     
@@ -74,3 +80,27 @@ def _handle(environ):
             return True
 
     return False
+
+
+def _load_plugins(environ):
+    '''
+    Load required authentication plugins dynamically.
+    '''
+
+    config = SafeConfigParser()
+    config.read(CONFIG_FILENAME)
+
+    required_plugin_path = config.get('plugins', 'required_path')
+    
+    if exists(required_plugin_path):
+        filenames = [f for f in listdir(required_plugin_path) if isfile(join(required_plugin_path, f)) and f.endswith('.py') and not f.startswith('__')]   
+        for f in filenames:
+            module_name = f[:-3]
+            try:
+                parent = __import__('pulp.repo_auth', globals(), locals(), [module_name], -1)
+            except ImportError, e:
+                environ["wsgi.errors"].write("Could not import any plugins from %s. Import error was: '%s'" % (module_name, e))
+                continue
+            
+            module = parent.__dict__[module_name]
+            REQUIRED_PLUGINS.append(module)
