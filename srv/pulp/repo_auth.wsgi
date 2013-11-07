@@ -103,4 +103,4 @@ def _load_plugins(environ):
                 continue
             
             module = parent.__dict__[module_name]
-            REQUIRED_PLUGINS.append(module)
+            REQUIRED_PLUGINS.append(module.authenticate)
