@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        40%{?dist}
+Release:        41%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,12 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Wed Nov 13 2013 David Gao <dgao@redhat.com> 0.0.263-41
+- added check for authenticate method before adding to REQUIRED_PLUGINS
+  (dgao@redhat.com)
+- append module.authenticate method instead of module onto REQUIRED_PLUGINS
+  (dgao@redhat.com)
+- dynamically load required repo_auth plugins (dgao@redhat.com)
 * Thu Oct 31 2013 David Gao <dgao@redhat.com> 0.0.263-40
 - 1024975 - don't remove 'repos' folder when cleaning up after a repo
   unassociation (dgao@redhat.com)
