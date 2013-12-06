@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        41%{?dist}
+Release:        42%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,14 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Fri Dec 06 2013 John Matthews <jwmatthews@gmail.com> 0.0.263-42
+- 1039172 - [upgrade] Missing 'plugins' section in repo_auth during upgrade
+  from RHUI 2.1.2 to RHUI 2.1.3 (jwmatthews@gmail.com)
+- 1039093 - IndexError: list index out of range in /var/log/pulp-cds/pulp.log
+  (jwmatthews@gmail.com)
+- 1039047 - After the upgrade RHUA is not able to communicate with CDS
+  (jwmatthews@gmail.com)
+
 * Wed Nov 13 2013 David Gao <dgao@redhat.com> 0.0.263-41
 - added check for authenticate method before adding to REQUIRED_PLUGINS
   (dgao@redhat.com)
