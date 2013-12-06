@@ -24,8 +24,50 @@ from pulp.repo_auth.protected_repo_utils import ProtectedRepoUtils
 # -- constants ---------------------------------------------------------------
 
 REPO_LIST_FILENAME = '.cds_repo_list'
-
 log = None
+
+def loginit_no_config_file(path=LOGPATH):
+    '''
+    Init log, used if a logging configuration file is not specified
+    @param path: The absolute path to the log file.
+    @type path: str
+    @return: The logger.
+    @rtype: Logger
+    '''
+
+    global log
+
+    LOGPATH = '/var/log/pulp-cds/gofer.log'
+    TIME = '%(asctime)s'
+    LEVEL = ' [%(levelname)s]'
+    THREAD = '[%(threadName)s]'
+    FUNCTION = ' %(funcName)s()'
+    FILE = ' @ %(filename)s'
+    LINE = ':%(lineno)d'
+    MSG = ' - %(message)s'
+
+    if sys.version_info < (2,5):
+        FUNCTION = ''
+
+    FMT = \
+        ''.join((TIME,
+            LEVEL,
+            THREAD,
+            FUNCTION,
+            FILE,
+            LINE,
+            MSG,))
+
+    if log is None:
+        logdir = os.path.dirname(path)
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
+        log = logging.getLogger(__name__)
+        handler = logging.FileHandler(path)
+        handler.setFormatter(logging.Formatter(FMT))
+        log.addHandler(handler)
+        log.setLevel(logging.DEBUG)
+    return log
 
 # -- public ------------------------------------------------------------------
 
@@ -41,7 +83,8 @@ def loginit(log_cfg_file=None):
     if not os.access(log_cfg_file, os.R_OK):
         raise RuntimeError("Unable to read log configuration file: %s" % (log_cfg_file))
     logging.config.fileConfig(log_cfg_file)
-    log = logging.getLogger(__name__) 
+    log = logging.getLogger(__name__)
+    return log
 
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
@@ -57,9 +100,14 @@ class CdsLib(object):
         self.config = config
         self.repo_cert_utils = RepoCertUtils(self.config)
         self.protected_repo_utils = ProtectedRepoUtils(self.config)
-        
-        log_config_file = self.config.get('cds', 'log_config_file')
-        loginit(log_cfg_file=log_config_file)
+
+        try:
+            log_config_file = self.config.get('cds', 'log_config_file')
+            loginit(log_cfg_file=log_config_file)
+            log.info("Logging configured with: '%s'" % (log_config_file))
+        except:
+            loginit_no_config_file()
+            log.info("No 'log_config_file' entry found in CDS config file, defaulted to standard logging.")
 
 
     def initialize(self):
