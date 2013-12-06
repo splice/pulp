@@ -26,7 +26,7 @@ from pulp.repo_auth.protected_repo_utils import ProtectedRepoUtils
 REPO_LIST_FILENAME = '.cds_repo_list'
 log = None
 
-def loginit_no_config_file(path=LOGPATH):
+def loginit_no_config_file(path=None):
     '''
     Init log, used if a logging configuration file is not specified
     @param path: The absolute path to the log file.
@@ -37,7 +37,9 @@ def loginit_no_config_file(path=LOGPATH):
 
     global log
 
-    LOGPATH = '/var/log/pulp-cds/gofer.log'
+    if not path:
+        path = '/var/log/pulp-cds/gofer.log'
+
     TIME = '%(asctime)s'
     LEVEL = ' [%(levelname)s]'
     THREAD = '[%(threadName)s]'
@@ -415,6 +417,41 @@ class CdsLib(object):
         log.info("CDS Sync report for [%s]: %s" % (url, report))
         return report
 
+    def _parse_repo_ids_and_paths(self, repo_list_filename):
+        repo_list_file = open(repo_list_filename, 'r')
+        try:
+            repo_list_contents = repo_list_file.readlines()
+        finally:
+            repo_list_file.close()
+
+        ret_val = []
+        for entry in repo_list_contents:
+            if "," in entry:
+                # RHUI 2.1.3 and newer format, each line is a tuple of (repo_id,repo_path)
+                pieces = entry.split(",")
+                ret_val.append( (pieces[0], pieces[1]) )
+            else:
+                # RHUI 2.1.2 and older format, each line is a single entry of the repo path
+                ret_val.append( (None, entry) )
+        return ret_val
+
+    def _delete_repo_auth_certs(self, repo_id, relative_path):
+        # Delete repo auth certs
+        try:
+            self._set_repo_auth(repo_id, relative_path, None)
+        except Exception:
+            return False, "Error deleting certificate bundle for repo [%s], path [%s]" % (repo_id, relative_path)
+
+        # Cleanup empty auth dir
+        path = os.path.join(self.config.get('repos', 'cert_location'), repo_id)
+        if os.path.exists(path):
+            try:
+                shutil.rmtree(path)
+            except Exception:
+                return False, "Error deleting auth cert directory for repo [%s], path [%s]" % (repo_id, path)
+        return True, None
+
+
     def _delete_removed_repos(self, repos):
         '''
         Deletes any repos that were synchronized in a previous sync but have since been
@@ -438,11 +475,7 @@ class CdsLib(object):
         if not os.path.exists(repo_list_filename):
             return
 
-        repo_list_file = open(repo_list_filename, 'r')
-        repo_list_contents = repo_list_file.read()
-        repo_list_file.close()
-
-        existing_repo = [(r.split(",")[0], r.split(",")[1]) for r in repo_list_contents.split()]
+        existing_repo = self._parse_repo_ids_and_paths(repo_list_filename)
 
         # Transform the list of repo dicts into just a list of relative URLs; this will
         # make the existence of a repo checking much simpler.
@@ -455,17 +488,11 @@ class CdsLib(object):
 
         # Delete the local paths and protection for those repos
         for repo_id, relative_path in delete_us:
-            # Delete repo auth certs
-            try:
-                self._set_repo_auth(repo_id, relative_path, None)
-            except Exception:
-                log.exception('Error deleting certificate bundle for repo [%s]' % repo_id)
-                error_messages.append('Error deleting certificate bundle for repo [%s]' % repo_id)
+            if repo_id:
+                status, error_msg = self._delete_repo_auth_certs(repo_id, relative_path)
+                if not status:
+                    error_messages.append(error_msg)
 
-            # Cleanup empty auth dir
-            path = os.path.join(self.config.get('repos', 'cert_location'), repo_id)
-            shutil.rmtree(path)
-            
             # Delete/Cleanup package dirs
             doomed = os.path.join(packages_dir, relative_path)
             log.info('Removing old repo [%s]' % doomed)
@@ -497,21 +524,14 @@ class CdsLib(object):
         if not os.path.exists(repo_list_filename):
             return
 
-        repo_list_file = open(repo_list_filename, 'r')
-        repo = [(r.split(",")[0], r.split(",")[1]) for r in repo_list_file.read().split()]
+        repo = self._parse_repo_ids_and_paths(repo_list_filename)
 
         # Delete the local paths for those urls
         for repo_id, relative_path in repo:
-            # Delete repo auth certs
-            try:
-                self._set_repo_auth(repo_id, relative_path, None)
-            except Exception:
-                log.exception('Error deleting certificate bundle for repo [%s]' % repo_id)
-                error_messages.append('Error deleting certificate bundle for repo [%s]' % repo_id)
-
-            # Cleanup empty auth dir
-            path = os.path.join(self.config.get('repos', 'cert_location'), repo_id)
-            shutil.rmtree(path)
+            if repo_id:
+                status, error_msg = self._delete_repo_auth_certs(repo_id, relative_path)
+                if not status:
+                    error_messages.append(error_msg)
 
             # Delete/Cleanup package dirs
             doomed = os.path.join(packages_dir, relative_path)
