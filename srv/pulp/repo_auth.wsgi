@@ -36,7 +36,7 @@ def check_password(environ, user, password):
     @return: True if the request is authorized, otherwise False.
     @rtype:  Boolean
     '''
-    _load_plugins(environ)
+    load_plugins(environ)
     authorized = _handle(environ)
     return authorized
     
@@ -82,6 +82,12 @@ def _handle(environ):
     return False
 
 
+def load_plugins(environ):
+    try:
+        _load_plugins(environ)
+    except Exception, e:
+        environ["wsgi.errors"].write('Unable to login plugins: [%s]' % (e))
+
 def _load_plugins(environ):
     '''
     Load required authentication plugins dynamically.
@@ -90,8 +96,13 @@ def _load_plugins(environ):
     config = SafeConfigParser()
     config.read(CONFIG_FILENAME)
 
-    required_plugin_path = config.get('plugins', 'required_path')
-    
+    try:
+        required_plugin_path = config.get('plugins', 'required_path')
+    except Exception, e:
+        required_plugin_path = None
+        environ["wsgi.errors"].write('Skipping loading of repo_auth plugins since no entry for "required_path" in [plugins] section.')
+        return 
+
     if exists(required_plugin_path):
         filenames = [f for f in listdir(required_plugin_path) if isfile(join(required_plugin_path, f)) and f.endswith('.py') and not f.startswith('__')]   
         for f in filenames:
