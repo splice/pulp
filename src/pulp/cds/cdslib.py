@@ -429,7 +429,7 @@ class CdsLib(object):
             if "," in entry:
                 # RHUI 2.1.3 and newer format, each line is a tuple of (repo_id,repo_path)
                 pieces = entry.split(",")
-                ret_val.append( (pieces[0], pieces[1]) )
+                ret_val.append( (pieces[0].strip(), pieces[1].strip()) )
             else:
                 # RHUI 2.1.2 and older format, each line is a single entry of the repo path
                 ret_val.append( (None, entry) )
