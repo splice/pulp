@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        42%{?dist}
+Release:        43%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Mon Dec 09 2013 David Gao <dgao@redhat.com> 0.0.263-43
+- added strip() to repo_path parsing so os.path.exists() won't fail during repo
+  deletion (dgao@redhat.com)
+
 * Fri Dec 06 2013 John Matthews <jwmatthews@gmail.com> 0.0.263-42
 - 1039172 - [upgrade] Missing 'plugins' section in repo_auth during upgrade
   from RHUI 2.1.2 to RHUI 2.1.3 (jwmatthews@gmail.com)
