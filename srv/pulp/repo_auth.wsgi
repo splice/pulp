@@ -115,4 +115,5 @@ def _load_plugins(environ):
             
             module = parent.__dict__[module_name]
             if 'authenticate' in dir(module):
-                REQUIRED_PLUGINS.append(module.authenticate)
+                if module.authenticate not in REQUIRED_PLUGINS:
+                    REQUIRED_PLUGINS.append(module.authenticate)
