@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        43%{?dist}
+Release:        44%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Fri Apr 25 2014 John Matthews <jwmatthews@gmail.com> 0.0.263-44
+- 1091468 - Performance issue exists if CDS loads additional repository
+  authentication modules (jwmatthews@gmail.com)
+
 * Mon Dec 09 2013 David Gao <dgao@redhat.com> 0.0.263-43
 - added strip() to repo_path parsing so os.path.exists() won't fail during repo
   deletion (dgao@redhat.com)
