@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        43.1%{?dist}
+Release:        43.2%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,9 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Wed Sep 03 2014 David Gao <jinmaster923@gmail.com> 0.0.263-43.2
+- Add a pulp-db migration for last_sync_attempt (jwmatthews@gmail.com)
+
 * Mon Dec 09 2013 David Gao <dgao@redhat.com> 0.0.263-43
 - added strip() to repo_path parsing so os.path.exists() won't fail during repo
   deletion (dgao@redhat.com)
