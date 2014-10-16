@@ -18,7 +18,7 @@
 import logging
 import urllib
 
-from M2Crypto import SSL, httpslib
+from M2Crypto import SSL, httpslib, m2
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +35,8 @@ class CDNConnection:
         self.httpServ = None
 
     def connect(self):
-        context = SSL.Context("sslv3")
+        context = SSL.Context("sslv23") # despite the name, this configures m2crypto to use _any_ available protocol
+        context.set_options(m2.SSL_OP_NO_SSLv2 | m2.SSL_OP_NO_SSLv3)
         context.load_cert(self.cert, keyfile=self.key)
         context.load_verify_locations(self.cacert)
         context.set_verify(SSL.verify_peer | SSL.verify_fail_if_no_peer_cert, depth=9)
