@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        32%{?dist}
+Release:        32.2%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -531,6 +531,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Thu Oct 16 2014 David Gao <dgao@redhat.com> 0.0.263-32.2
+- Disable sslv3 used by the client to protect against POODLE attack.
+  (jinmaster923@gmail.com)
+
 * Fri Apr 05 2013 James Slagle <jslagle@redhat.com> 0.0.263-32
 - 916378 package pulp-purge-packages for both RHUA and CDS (jslagle@redhat.com)
 - Script to purge packages not referenced by any repositories
