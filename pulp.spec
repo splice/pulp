@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        44%{?dist}
+Release:        45%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -535,6 +535,11 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Thu Oct 16 2014 David Gao <dgao@redhat.com> 0.0.263-45
+- Disable sslv3 used by the client to protect against POODLE attack.
+  (jinmaster923@gmail.com)
+- Add a pulp-db migration for last_sync_attempt (jwmatthews@gmail.com)
+
 * Fri Apr 25 2014 John Matthews <jwmatthews@gmail.com> 0.0.263-44
 - 1091468 - Performance issue exists if CDS loads additional repository
   authentication modules (jwmatthews@gmail.com)
