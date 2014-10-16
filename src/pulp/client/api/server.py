@@ -24,7 +24,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from M2Crypto import SSL, httpslib
+from M2Crypto import SSL, httpslib, m2
 
 from pulp.client.lib.logutil import getLogger, getResponseLogger
 # current active server -------------------------------------------------------
@@ -212,7 +212,8 @@ class PulpServer(Server):
         if self.__certfile is None or \
                 'Authorization' in self.headers:
             return httplib.HTTPSConnection(self.host, self.port)
-        ssl_context = SSL.Context('sslv3')
+        ssl_context = SSL.Context("sslv23") # despite the name, this configures m2crypto to use _any_ available protocol
+        ssl_context.set_options(m2.SSL_OP_NO_SSLv2 | m2.SSL_OP_NO_SSLv3)
         ssl_context.set_session_timeout(self.timeout)
         ssl_context.load_cert(self.__certfile)
         #print >> sys.stderr, 'making connection with: %s' % (self.__certfile)
