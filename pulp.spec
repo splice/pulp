@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        29.1%{?dist}
+Release:        29.2%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -526,6 +526,9 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Thu Oct 16 2014 David Gao <dgao@redhat.com> 0.0.263-29.2
+- 
+
 * Thu Oct 16 2014 David Gao <dgao@redhat.com> 0.0.263-29.1
 - Disable sslv3 used by the client to protect against POODLE attack.
   (jinmaster923@gmail.com)
