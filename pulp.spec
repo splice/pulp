@@ -19,7 +19,7 @@
 
 Name:           pulp
 Version:        0.0.263
-Release:        19%{?dist}
+Release:        19.2%{?dist}
 Summary:        An application for managing software content
 
 Group:          Development/Languages
@@ -500,6 +500,10 @@ fi
 # -- changelog ---------------------------------------------------------------
 
 %changelog
+* Fri Oct 17 2014 David Gao <dgao@redhat.com> 0.0.263-19.2
+- Disable sslv3 used by the client to protect against POODLE attack.
+  (jinmaster923@gmail.com)
+
 * Wed Mar 21 2012 James Slagle <jslagle@redhat.com> 0.0.263-19
 - 805616 drop indexes from repo.packagegroups and repo.packagegroupcategories
   to avoid index on description field (jslagle@redhat.com)
